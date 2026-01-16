@@ -1,0 +1,8 @@
+customtkinter
+pillow
+opencv-python
+rawpy
+imageio
+tkinterdnd2-universal
+pyinstaller
+numpy
