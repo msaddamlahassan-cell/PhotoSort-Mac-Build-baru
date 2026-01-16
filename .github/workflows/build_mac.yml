@@ -1,0 +1,53 @@
+name: Build PhotoSort Mac ARM
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14  # Ini menyewa Mac M1 (Apple Silicon) virtual
+    
+    steps:
+    # 1. Ambil kode dari repository
+    - uses: actions/checkout@v4
+    
+    # 2. Instal Python 3.11
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    # 3. Instal Library dari requirements.txt
+    - name: Install Dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # 4. PROSES BUILD (Memasak Kode jadi Aplikasi)
+    - name: Build with PyInstaller
+      run: |
+        # Perintah ini membuat aplikasi .app
+        # Kita gunakan --collect-all agar library drag-and-drop terbawa
+        
+        pyinstaller --noconsole --onefile --windowed --name "PhotoSortPro" \
+        --collect-all "tkinterdnd2" \
+        PhotoSort.pyw
+        
+        # CATATAN: Jika Anda punya icon, tambahkan baris ini sebelum PhotoSort.pyw:
+        # --icon="app_icon.icns" \
+
+    # 5. Bungkus Hasilnya (Zip)
+    - name: Zip Application
+      run: |
+        cd dist
+        # Zip aplikasi agar permission file terjaga saat didownload
+        zip -r PhotoSortPro_Mac.zip PhotoSortPro.app
+
+    # 6. Upload Hasil agar bisa didownload user
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: PhotoSort-Mac-App
+        path: dist/PhotoSortPro_Mac.zip
